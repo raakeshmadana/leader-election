@@ -20,6 +20,32 @@ parseInput(inputFile).then(
   return spawnProcesses(input);
 })
 .then((pids) => {
+  return connectToNeighbors(pids);
+})
+.then((message) => {
+  console.log('All connections established');
+});
+
+spawnProcesses = (input) => {
+  for(let i = 0; i < input.n; i++) {
+    let args = [];
+    let uid = input.ids[i];
+    args.push(uid);
+    workers[uid] = cp.fork('./worker', args);
+  }
+
+  for(let worker in workers) {
+    promises.push(new Promise((resolve, reject) => {
+      workers[worker].on('message', (pid) => {
+        resolve(pid);
+      });
+    }));
+  }
+
+  return Promise.all(promises);
+}
+
+connectToNeighbors = (pids) => {
   pids.forEach((pid) => {
     ports[pid.uid] = pid.port;
   });
@@ -35,20 +61,11 @@ parseInput(inputFile).then(
     let worker = input.ids[i];
     workers[worker].send(neighbors);
   }
-});
-
-spawnProcesses = (input) => {
-  for(let i = 0; i < input.n; i++) {
-    let args = [];
-    let uid = input.ids[i];
-    args.push(uid);
-    workers[uid] = cp.fork('./worker', args);
-  }
 
   for(let worker in workers) {
     promises.push(new Promise((resolve, reject) => {
-      workers[worker].on('message', (pid) => {
-        resolve(pid);
+      workers[worker].on('message', (message) => {
+        resolve(message);
       });
     }));
   }
