@@ -4,7 +4,6 @@ const helpers = require('./helpers');
 var input = {};
 var workers = {};
 var ports = {};
-var promises = [];
 
 const inputFile = process.argv[2];
 
@@ -33,6 +32,7 @@ spawnProcesses = (input) => {
     workers[uid] = cp.fork('./worker', args);
   }
 
+  let promises = [];
   for(let worker in workers) {
     promises.push(new Promise((resolve, reject) => {
       workers[worker].on('message', (pid) => {
@@ -61,6 +61,7 @@ connectToNeighbors = (pids) => {
     workers[worker].send(neighbors);
   }
 
+  let promises = [];
   for(let worker in workers) {
     promises.push(new Promise((resolve, reject) => {
       workers[worker].on('message', (message) => {
