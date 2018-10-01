@@ -1,5 +1,5 @@
 const cp = require('child_process');
-const parseInput = require('./parseInput');
+const helpers = require('./helpers');
 
 var input = {};
 var workers = {};
@@ -8,7 +8,7 @@ var promises = [];
 
 const inputFile = process.argv[2];
 
-parseInput(inputFile).then(
+helpers.parseInput(inputFile).then(
   (data) => {
     input = data;
   },

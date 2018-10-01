@@ -1,8 +1,6 @@
 const fs = require('fs');
-//Like I mentioned that day, reject and resolve are just function calls, you need to return the callback.
-//If you don't you will run into unecessary errors (hard to debug).
-//TODO : Your function that you are exporting is bad style of coding; rather define function and then export it.
-module.exports = (inputFile) => {
+
+function parseInput(inputFile) {
   return new Promise((resolve, reject) => {
     fs.readFile(inputFile, { encoding: 'utf8' }, (err, data) => {
       if(err) {
@@ -21,3 +19,7 @@ module.exports = (inputFile) => {
     });
   });
 }
+
+module.exports = {
+  parseInput
+};
