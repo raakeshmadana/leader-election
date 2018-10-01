@@ -25,7 +25,7 @@ helpers.parseInput(inputFile).then(
   console.log('All connections established');
 });
 
-spawnProcesses = (input) => {
+function spawnProcesses(input) {
   for(let uid of input.ids) {
     let args = [];
     args.push(uid);
@@ -44,7 +44,7 @@ spawnProcesses = (input) => {
   return Promise.all(promises);
 }
 
-connectToNeighbors = (pids) => {
+function connectToNeighbors(pids) {
   pids.forEach((pid) => {
     ports[pid.uid] = pid.port;
   });
