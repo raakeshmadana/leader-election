@@ -27,9 +27,8 @@ helpers.parseInput(inputFile).then(
 });
 
 spawnProcesses = (input) => {
-  for(let i = 0; i < input.numWorkers; i++) {
+  for(let uid of input.ids) {
     let args = [];
-    let uid = input.ids[i];
     args.push(uid);
     workers[uid] = cp.fork('./worker', args);
   }
