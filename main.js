@@ -27,7 +27,7 @@ helpers.parseInput(inputFile).then(
 });
 
 spawnProcesses = (input) => {
-  for(let i = 0; i < input.n; i++) {
+  for(let i = 0; i < input.numWorkers; i++) {
     let args = [];
     let uid = input.ids[i];
     args.push(uid);
@@ -50,7 +50,7 @@ connectToNeighbors = (pids) => {
     ports[pid.uid] = pid.port;
   });
 
-  for(let i = 0; i < input.n; i++) {
+  for(let i = 0; i < input.numWorkers; i++) {
     let neighbors = [];
     for(let j = 0; j < input.graph[i].length; j++) {
       if(input.graph[i][j] == 1) {
