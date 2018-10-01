@@ -20,7 +20,7 @@ process.on('message', (message) => {
     promises.push(new Promise((resolve, reject) => {
       net.createConnection(neighbor, () => {
         console.log(uid + ' connected to ' + neighbor);
-        resolve('connected');
+        return resolve('connected');
       });
     }));
   });

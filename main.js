@@ -36,7 +36,7 @@ spawnProcesses = (input) => {
   for(let worker in workers) {
     promises.push(new Promise((resolve, reject) => {
       workers[worker].on('message', (pid) => {
-        resolve(pid);
+        return resolve(pid);
       });
     }));
   }
@@ -64,7 +64,7 @@ connectToNeighbors = (pids) => {
   for(let worker in workers) {
     promises.push(new Promise((resolve, reject) => {
       workers[worker].on('message', (message) => {
-        resolve(message);
+        return resolve(message);
       });
     }));
   }
