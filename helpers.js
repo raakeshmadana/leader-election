@@ -7,8 +7,8 @@ function parseInput(inputFile) {
         return reject(err);
       }
 
-      var lines = data.split('\n');
-      var input = {};
+      let lines = data.split('\n');
+      let input = {};
       input.numWorkers = lines[0];
       input.ids = lines[1].split(' ');
       input.graph = [];
