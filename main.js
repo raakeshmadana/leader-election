@@ -1,3 +1,4 @@
+'use strict';
 const cp = require('child_process');
 const helpers = require('./helpers');
 const messageTypes = require('./messageTypes');

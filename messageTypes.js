@@ -1,3 +1,4 @@
+'use strict';
 const INITIATE_CONNECTIONS = 'INITIATE_CONNECTIONS';
 const START_ROUND = 'START_ROUND';
 const EXIT = 'EXIT';
