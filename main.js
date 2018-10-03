@@ -1,76 +1,32 @@
 'use strict';
-const cp = require('child_process');
+const masterTask = require('./masterTask');
 const helpers = require('./helpers');
 const messageTypes = require('./messageTypes');
 
 var input = {};
-var workers = {};
-var ports = {};
 
-const inputFile = process.argv[2];
+initiateFloodMax();
 
-helpers.parseInput(inputFile).then(
-  (data) => {
-    input = data;
-  },
-  (err) => {
-    console.log(err);
-  }
-)
-.then(() => {
-  return spawnProcesses(input);
-})
-.then((pids) => {
-  return connectToNeighbors(pids);
-})
-.then((message) => {
-  console.log('All connections established');
-});
+function initiateFloodMax() {
+  const inputFile = process.argv[2];
 
-function spawnProcesses(input) {
-  for(let uid of input.ids) {
-    let args = [];
-    args.push(uid);
-    workers[uid] = cp.fork('./worker', args);
-  }
-
-  let promises = [];
-  for(let worker in workers) {
-    promises.push(new Promise((resolve, reject) => {
-      workers[worker].on('message', (pid) => {
-        return resolve(pid);
-      });
-    }));
-  }
-
-  return Promise.all(promises);
-}
-
-function connectToNeighbors(pids) {
-  pids.forEach((pid) => {
-    ports[pid.uid] = pid.port;
+  helpers.parseInput(inputFile).then(
+    (data) => {
+      input = data;
+    },
+    (err) => {
+      console.log(err);
+    }
+  )
+  .then(() => {
+    return masterTask.spawnProcesses(input);
+  })
+  .then((pids) => {
+    return masterTask.connectToNeighbors(pids, input);
+  })
+  .then((message) => {
+    console.log('All connections established');
   });
 
-  for(let i = 0; i < input.numWorkers; i++) {
-    let neighbors = [];
-    for(let j = 0; j < input.graph[i].length; j++) {
-      if(input.graph[i][j] == 1) {
-        let uid = input.ids[j].toString();
-        neighbors.push(ports[uid]);
-      }
-    }
-    let worker = input.ids[i];
-    workers[worker].send(neighbors);
-  }
-
-  let promises = [];
-  for(let worker in workers) {
-    promises.push(new Promise((resolve, reject) => {
-      workers[worker].on('message', (message) => {
-        return resolve(message);
-      });
-    }));
-  }
-
-  return Promise.all(promises);
+  return;
 }
