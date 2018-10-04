@@ -1,5 +1,6 @@
 'use strict';
 const net = require('net');
+const messageTypes = require('./messageTypes');
 
 const uid = process.argv[2];
 var neighbors = [];
@@ -10,7 +11,13 @@ const server = net.createServer((socket) => {
 
 server.listen(process.pid, () => {
   console.log(uid + ' listening at ' +  process.pid);
-  process.send({ uid: uid, port: process.pid });
+  let payload = { pid: process.pid};
+  let message = {
+    source: uid,
+    type: messageTypes.PID,
+    payload: payload
+  };
+  process.send(message);
 });
 
 process.on('message', (message) => {
