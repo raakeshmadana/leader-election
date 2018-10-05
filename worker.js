@@ -3,13 +3,17 @@ const net = require('net');
 const messageTypes = require('./messageTypes');
 
 const uid = process.argv[2];
-var neighbors = [];
+
+const incomingConnections = [];
+const outgoingConnections = [];
+
 const tasks = {};
 tasks[messageTypes.INITIATE_CONNECTIONS] = initiateConnections;
+tasks[messageTypes.START_ROUND] = startRound;
 
-const server = net.createServer((socket) => {
-  console.log(socket.remotePort + ' connected to ' + uid);
-});
+var max_uid = uid;
+
+const server = net.createServer();
 
 server.listen(process.pid, () => {
   console.log(uid + ' listening at ' +  process.pid);
@@ -28,22 +32,54 @@ process.on('message', (message) => {
   task(payload);
 });
 
+function floodmax() {
+  outgoingConnections.forEach((outgoingConnection) => {
+    outgoingConnection.write(max_uid);
+  });
+}
+
 function initiateConnections({ neighbors }) {
-  let promises = [];
+  setUpConnectionListener(neighbors.length);
   neighbors.forEach((neighbor) => {
-    promises.push(new Promise((resolve, reject) => {
-      net.createConnection(neighbor, () => {
+      let socket = net.createConnection(neighbor, () => {
         console.log(uid + ' connected to ' + neighbor);
-        return resolve();
+      });
+      outgoingConnections.push(socket);
+  });
+}
+
+function listener() {
+  let promises = [];
+  for(let incomingConnection of incomingConnections) {
+    promises.push(new Promise((resolve, reject) => {
+      incomingConnection.once('data', (message) => {
+        return resolve(message.toString());
       });
     }));
-  });
+  }
+  Promise.all(promises).then(processMessages);
+}
 
-  Promise.all(promises).then(() => {
-    let message = {
-      type: messageTypes.CONNECTIONS_ESTABLISHED,
-      source: uid
-    };
-    process.send(message);
+function processMessages(uids) {
+  max_uid = Math.max(...uids, max_uid);
+  console.log(uid + ' has seen ' + uids + '; max is ' + max_uid);
+}
+
+function startRound(parameters) {
+  console.log(uid + ' started round 1');
+  listener();
+  floodmax();
+}
+
+function setUpConnectionListener(numNeighbors) {
+  server.on('connection', (socket) => {
+    incomingConnections.push(socket);
+    if(incomingConnections.length == numNeighbors) {
+      let message = {
+        type: messageTypes.CONNECTIONS_ESTABLISHED,
+        source: uid
+      };
+      process.send(message);
+    }
   });
 }
