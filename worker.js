@@ -61,13 +61,22 @@ function listener() {
 }
 
 function processMessages(uids) {
-  max_uid = Math.max(...uids, max_uid);
+  max_uid = Math.max(...uids, max_uid).toString();
   console.log(uid + ' has seen ' + uids + '; max is ' + max_uid);
+  let payload = {
+    terminated: false,
+    leader: max_uid,
+  };
+  let message = {
+    type: messageTypes.END_ROUND,
+    source: uid,
+    payload: payload
+  };
+  process.send(message);
+  listener();
 }
 
 function startRound(parameters) {
-  console.log(uid + ' started round 1');
-  listener();
   floodmax();
 }
 
@@ -80,6 +89,7 @@ function setUpConnectionListener(numNeighbors) {
         source: uid
       };
       process.send(message);
+      listener();
     }
   });
 }

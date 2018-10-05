@@ -5,7 +5,7 @@ const messageTypes = require('./messageTypes');
 const tasks = {};
 tasks[messageTypes.PID] = masterTask.connectToNeighbors;
 tasks[messageTypes.CONNECTIONS_ESTABLISHED] = masterTask.startRound;
-tasks[messageTypes.END_ROUND] = masterTask.endRound;
+tasks[messageTypes.END_ROUND] = masterTask.startRound;
 
 function listener() {
   let promises = [];

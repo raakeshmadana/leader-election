@@ -22,10 +22,6 @@ function connectToNeighbors(worker, uid, { pid }) {
   worker.send(message);
 }
 
-function endRound(worker, uid, parameters) {
-  console.log(uid + ' finished processing');
-}
-
 function printConnectionStatus(worker, uid, parameters) {
   console.log(uid + ' connected to all its neighbors');
   terminated = true;
@@ -50,7 +46,6 @@ function startRound(worker, uid, parameters) {
 
 module.exports = {
   connectToNeighbors,
-  endRound,
   spawnProcesses,
   startRound,
   printConnectionStatus,
