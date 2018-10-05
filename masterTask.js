@@ -1,6 +1,9 @@
 'use strict';
 const cp = require('child_process');
+const messageTypes = require('./messageTypes');
 
+var terminated = false;
+var workers = {};
 var neighbors = {};
 var ports = {};
 
@@ -9,22 +12,36 @@ function connectToNeighbors(worker, uid, { pid }) {
   neighbors[uid].forEach((neighbor) => {
     neighborsPorts.push(ports[neighbor]);
   });
-  worker.send(neighborsPorts);
+  let payload = {
+    neighbors: neighborsPorts
+  };
+  let message = {
+    type: messageTypes.INITIATE_CONNECTIONS,
+    payload: payload
+  };
+  worker.send(message);
+}
+
+function printConnectionStatus(worker, uid, parameters) {
+  console.log(uid + ' connected to all its neighbors');
+  terminated = true;
 }
 
 function spawnProcesses(input) {
   neighbors = input.neighbors;
-  let workers = {};
   for(let uid of input.ids) {
     let args = [];
     args.push(uid);
     workers[uid] = cp.fork('./worker', args);
   }
-  return workers;
+  return;
 }
 
 module.exports = {
   connectToNeighbors,
   spawnProcesses,
-  ports
+  printConnectionStatus,
+  workers,
+  ports,
+  terminated
 };

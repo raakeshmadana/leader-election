@@ -18,8 +18,8 @@ function initiateFloodMax() {
       console.log(err);
     }
   )
-  .then((workers) => {
-    master.listener(workers);
+  .then(() => {
+    master.listener();
   });
 
   return;

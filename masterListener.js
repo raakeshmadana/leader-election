@@ -4,14 +4,13 @@ const messageTypes = require('./messageTypes');
 
 const tasks = {};
 tasks[messageTypes.PID] = masterTask.connectToNeighbors;
-var workers = {};
+tasks[messageTypes.CONNECTIONS_ESTABLISHED] = masterTask.printConnectionStatus;
 
-function listener(processes) {
-  workers = processes;
+function listener() {
   let promises = [];
-  for(let worker in workers) {
+  for(let worker in masterTask.workers) {
     promises.push(new Promise((resolve, reject) => {
-      workers[worker].on('message', (message) => {
+      masterTask.workers[worker].once('message', (message) => {
         let task = tasks[message.type];
         let uid = message.source;
         let parameters = message.payload;
@@ -23,11 +22,14 @@ function listener(processes) {
     }));
   }
   Promise.all(promises).then(listenerHandle);
-};
+}
 
 function listenerHandle(operations) {
+  if(!masterTask.terminated) {
+    listener();
+  }
   operations.forEach((operation) => {
-    operation.task(workers[operation.uid], operation.uid, operation.parameters);
+    operation.task(masterTask.workers[operation.uid], operation.uid, operation.parameters);
   });
 }
 
