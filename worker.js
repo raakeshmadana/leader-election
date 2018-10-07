@@ -41,10 +41,10 @@ function floodmax() {
 function initiateConnections({ neighbors }) {
   setUpConnectionListener(neighbors.length);
   neighbors.forEach((neighbor) => {
-      let socket = net.createConnection(neighbor, () => {
-        console.log(uid + ' connected to ' + neighbor);
-      });
-      outgoingConnections.push(socket);
+    let socket = net.createConnection(neighbor, () => {
+      console.log(uid + ' connected to ' + neighbor);
+    });
+    outgoingConnections.push(socket);
   });
 }
 
