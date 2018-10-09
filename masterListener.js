@@ -30,7 +30,10 @@ function listenerHandle(operations) {
     listener();
   }
   operations.forEach((operation) => {
-    operation.task(masterTask.workers[operation.uid], operation.uid, operation.parameters);
+    operation.task(
+      masterTask.workers[operation.uid],
+      operation.uid,
+      operation.parameters);
   });
 }
 

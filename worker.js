@@ -11,7 +11,7 @@ const tasks = {};
 tasks[messageTypes.INITIATE_CONNECTIONS] = initiateConnections;
 tasks[messageTypes.START_ROUND] = startRound;
 
-var max_uid = uid;
+var maxUid = uid;
 
 const server = net.createServer();
 
@@ -34,7 +34,7 @@ process.on('message', (message) => {
 
 function floodmax() {
   outgoingConnections.forEach((outgoingConnection) => {
-    outgoingConnection.write(max_uid);
+    outgoingConnection.write(maxUid);
   });
 }
 
@@ -61,11 +61,11 @@ function listener() {
 }
 
 function processMessages(uids) {
-  max_uid = Math.max(...uids, max_uid).toString();
-  console.log(uid + ' has seen ' + uids + '; max is ' + max_uid);
+  maxUid = Math.max(...uids, maxUid).toString();
+  console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
   let payload = {
     terminated: false,
-    leader: max_uid,
+    leader: maxUid,
   };
   let message = {
     type: messageTypes.END_ROUND,
