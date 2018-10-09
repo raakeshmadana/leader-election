@@ -2,7 +2,6 @@
 const masterTask = require('./masterTask');
 const master = require('./masterListener');
 const helpers = require('./helpers');
-const messageTypes = require('./messageTypes');
 
 initiateFloodMax();
 

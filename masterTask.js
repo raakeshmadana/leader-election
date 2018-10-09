@@ -7,7 +7,7 @@ var workers = {};
 var neighbors = {};
 var ports = {};
 
-function connectToNeighbors(worker, uid, { pid }) {
+function connectToNeighbors(worker, uid, {pid}) {
   let neighborsPorts = [];
   neighbors[uid].forEach((neighbor) => {
     neighborsPorts.push(ports[neighbor]);
@@ -29,7 +29,7 @@ function printConnectionStatus(worker, uid, parameters) {
 
 function spawnProcesses(input) {
   neighbors = input.neighbors;
-  for(let uid of input.ids) {
+  for (let uid of input.ids) {
     let args = [];
     args.push(uid);
     workers[uid] = cp.fork('./worker', args);

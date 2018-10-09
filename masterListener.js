@@ -9,16 +9,16 @@ tasks[messageTypes.END_ROUND] = masterTask.startRound;
 
 function listener() {
   let promises = [];
-  for(let worker in masterTask.workers) {
+  for (let worker in masterTask.workers) {
     promises.push(new Promise((resolve, reject) => {
       masterTask.workers[worker].once('message', (message) => {
         let task = tasks[message.type];
         let uid = message.source;
         let parameters = message.payload;
-        if(message.type == messageTypes.PID) {
+        if (message.type === messageTypes.PID) {
           masterTask.ports[uid] = parameters.pid;
         }
-        return resolve({ task, uid, parameters });
+        return resolve({task, uid, parameters});
       });
     }));
   }
@@ -26,7 +26,7 @@ function listener() {
 }
 
 function listenerHandle(operations) {
-  if(!masterTask.terminated) {
+  if (!masterTask.terminated) {
     listener();
   }
   operations.forEach((operation) => {

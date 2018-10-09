@@ -17,7 +17,7 @@ const server = net.createServer();
 
 server.listen(process.pid, () => {
   console.log(uid + ' listening at ' +  process.pid);
-  let payload = { pid: process.pid};
+  let payload = {pid: process.pid};
   let message = {
     source: uid,
     type: messageTypes.PID,
@@ -38,7 +38,7 @@ function floodmax() {
   });
 }
 
-function initiateConnections({ neighbors }) {
+function initiateConnections({neighbors}) {
   setUpConnectionListener(neighbors.length);
   neighbors.forEach((neighbor) => {
     let socket = net.createConnection(neighbor, () => {
@@ -50,7 +50,7 @@ function initiateConnections({ neighbors }) {
 
 function listener() {
   let promises = [];
-  for(let incomingConnection of incomingConnections) {
+  for (let incomingConnection of incomingConnections) {
     promises.push(new Promise((resolve, reject) => {
       incomingConnection.once('data', (message) => {
         return resolve(message.toString());
@@ -83,7 +83,7 @@ function startRound(parameters) {
 function setUpConnectionListener(numNeighbors) {
   server.on('connection', (socket) => {
     incomingConnections.push(socket);
-    if(incomingConnections.length == numNeighbors) {
+    if (incomingConnections.length === numNeighbors) {
       let message = {
         type: messageTypes.CONNECTIONS_ESTABLISHED,
         source: uid
