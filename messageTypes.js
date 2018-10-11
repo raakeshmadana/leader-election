@@ -6,6 +6,9 @@ const PID = 'PID';
 const CONNECTIONS_ESTABLISHED = 'CONNECTIONS_ESTABLISHED';
 const END_ROUND = 'END_ROUND';
 const TERMINATED = 'TERMINATED';
+const EXPLORE = 'EXPLORE';
+const ACK = 'ACK';
+const NACK = 'NACK';
 
 module.exports = {
   INITIATE_CONNECTIONS,
@@ -14,5 +17,8 @@ module.exports = {
   PID,
   CONNECTIONS_ESTABLISHED,
   END_ROUND,
-  TERMINATED
+  TERMINATED,
+  EXPLORE,
+  ACK,
+  NACK
 };
