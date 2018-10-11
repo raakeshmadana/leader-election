@@ -36,8 +36,13 @@ process.on('message', (message) => {
 });
 
 function floodmax() {
+  let message = {
+    source: process.pid,
+    maxUid: maxUid,
+    bfs: null
+  };
   outgoingConnections.forEach((outgoingConnection) => {
-    outgoingConnection.write(maxUid);
+    outgoingConnection.write(JSON.stringify(message));
   });
 }
 
@@ -56,14 +61,16 @@ function listener() {
   for (let incomingConnection of incomingConnections) {
     promises.push(new Promise((resolve, reject) => {
       incomingConnection.once('data', (message) => {
-        return resolve(message.toString());
+        return resolve(message);
       });
     }));
   }
   Promise.all(promises).then(processMessages);
 }
 
-function processMessages(uids) {
+function processMessages(messages) {
+  let msgObjs = messages.map((message) => JSON.parse(message));
+  let uids = msgObjs.map((msgObj) => msgObj.maxUid);
   maxUid = Math.max(...uids, maxUid).toString();
   console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
   let payload = {
