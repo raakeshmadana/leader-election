@@ -3,10 +3,11 @@ const net = require('net');
 const messageTypes = require('./messageTypes');
 
 const uid = process.argv[2];
-const source = process.argv[3];
+const source = process.argv[3] === 'true' ? true: false;
 
 var marked = source;
 var maxUid = uid;
+var parentWorker = null;
 
 const incomingConnections = [];
 const outgoingConnections = [];
@@ -41,6 +42,10 @@ function floodmax() {
     maxUid: maxUid,
     bfs: null
   };
+  if(marked) {
+    message.bfs = messageTypes.EXPLORE;
+    marked = false;
+  }
   outgoingConnections.forEach((outgoingConnection) => {
     outgoingConnection.write(JSON.stringify(message));
   });
@@ -70,9 +75,25 @@ function listener() {
 
 function processMessages(messages) {
   let msgObjs = messages.map((message) => JSON.parse(message));
+
   let uids = msgObjs.map((msgObj) => msgObj.maxUid);
   maxUid = Math.max(...uids, maxUid).toString();
-  console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
+
+  let exploreRequests = [];
+  msgObjs.forEach((msgObj) => {
+    if(msgObj.bfs === messageTypes.EXPLORE) {
+      console.log(uid, msgObj.source, msgObj.bfs);
+      exploreRequests.push(msgObj.source);
+    }
+  });
+
+  if(exploreRequests.length && !parentWorker && !source) {
+    let randomIndex = Math.floor(Math.random() * exploreRequests.length);
+    parentWorker = exploreRequests[randomIndex];
+    marked = true;
+    console.log(uid, parentWorker);
+  }
+  //console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
   let payload = {
     terminated: false,
     leader: maxUid,
