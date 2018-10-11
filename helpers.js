@@ -13,6 +13,15 @@ function parseInput(inputFile) {
       input.numWorkers = lines[0];
       input.ids = lines[1].split(' ');
       input.neighbors = {};
+      input.source = {};
+
+      input.ids.forEach((uid) => {
+        input.source[uid] = false;
+      });
+
+      let randomIndex = Math.floor(Math.random() * input.ids.length);
+      let sourceUid = input.ids[randomIndex];
+      input.source[sourceUid] = true;
 
       let graph = [];
       for (let i = 0; i < input.numWorkers; i++) {

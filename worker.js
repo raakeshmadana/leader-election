@@ -3,6 +3,10 @@ const net = require('net');
 const messageTypes = require('./messageTypes');
 
 const uid = process.argv[2];
+const source = process.argv[3];
+
+var marked = source;
+var maxUid = uid;
 
 const incomingConnections = [];
 const outgoingConnections = [];
@@ -11,7 +15,6 @@ const tasks = {};
 tasks[messageTypes.INITIATE_CONNECTIONS] = initiateConnections;
 tasks[messageTypes.START_ROUND] = startRound;
 
-var maxUid = uid;
 
 const server = net.createServer();
 

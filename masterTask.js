@@ -31,7 +31,7 @@ function spawnProcesses(input) {
   neighbors = input.neighbors;
   for (let uid of input.ids) {
     let args = [];
-    args.push(uid);
+    args.push(uid, input.source[uid]);
     workers[uid] = cp.fork('./worker', args);
   }
   return;
