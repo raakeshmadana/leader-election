@@ -42,7 +42,7 @@ function floodmax() {
     maxUid: maxUid,
     bfs: null
   };
-  if(marked) {
+  if (marked) {
     message.bfs = messageTypes.EXPLORE;
     marked = false;
   }
@@ -81,13 +81,13 @@ function processMessages(messages) {
 
   let exploreRequests = [];
   msgObjs.forEach((msgObj) => {
-    if(msgObj.bfs === messageTypes.EXPLORE) {
+    if (msgObj.bfs === messageTypes.EXPLORE) {
       console.log(uid, msgObj.source, msgObj.bfs);
       exploreRequests.push(msgObj.source);
     }
   });
 
-  if(exploreRequests.length && !parentWorker && !source) {
+  if (exploreRequests.length && !parentWorker && !source) {
     let randomIndex = Math.floor(Math.random() * exploreRequests.length);
     parentWorker = exploreRequests[randomIndex];
     marked = true;
