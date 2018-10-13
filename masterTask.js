@@ -4,6 +4,7 @@ const colors = require('colors');
 const messageTypes = require('./messageTypes');
 
 var terminated = false;
+var ids = [];
 var workers = {};
 var neighbors = {};
 var ports = {};
@@ -27,6 +28,22 @@ function connectToNeighbors(worker, uid, {pid}) {
   worker.send(message);
 }
 
+function formAdjMatrix() {
+  let adjMatrix = [];
+  ids.forEach((node) => {
+    let row = [];
+    ids.forEach((neighbor) => {
+      if (spanningTree[node].includes(neighbor)) {
+        row.push(1);
+      } else {
+        row.push(0);
+      }
+    });
+    adjMatrix.push(row);
+  });
+  console.log(adjMatrix);
+}
+
 function printConnectionStatus(worker, uid, parameters) {
   console.log(uid + ' connected to all its neighbors');
   terminated = true;
@@ -34,6 +51,7 @@ function printConnectionStatus(worker, uid, parameters) {
 
 function spawnProcesses(input) {
   neighbors = input.neighbors;
+  ids = input.ids;
   for (let uid of input.ids) {
     let args = [];
     args.push(uid, input.source[uid]);
@@ -55,6 +73,7 @@ function startRound(worker, uid, parameters) {
     }
     if (numWorkersTerminated === Object.keys(neighbors).length) {
       // Construct Adjacency matrix
+      formAdjMatrix();
       console.log(leader, spanningTree);
     }
     console.log(colors.green(uid, parameters.leader, parameters.parent,
