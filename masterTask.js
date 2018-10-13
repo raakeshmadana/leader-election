@@ -1,5 +1,6 @@
 'use strict';
 const cp = require('child_process');
+const colors = require('colors');
 const messageTypes = require('./messageTypes');
 
 var terminated = false;
@@ -38,6 +39,9 @@ function spawnProcesses(input) {
 }
 
 function startRound(worker, uid, parameters) {
+  if (parameters.terminated) {
+    console.log(colors.green(uid, parameters.leader, parameters.parent, parameters.children));
+  }
   let message = {
     type: messageTypes.START_ROUND
   };

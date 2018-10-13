@@ -204,7 +204,12 @@ function processMessages(messages) {
   let payload = {
     terminated: false,
     leader: maxUid,
+    parent: parentWorker,
+    children: childrenWorkers
   };
+  if (terminate) {
+    payload.terminated = true;
+  }
   let message = {
     type: messageTypes.END_ROUND,
     source: uid,
@@ -224,7 +229,10 @@ function setUpConnectionListener(numNeighbors) {
     if (incomingConnections.length === numNeighbors) {
       let message = {
         type: messageTypes.CONNECTIONS_ESTABLISHED,
-        source: uid
+        source: uid,
+        payload: {
+          terminated: false
+        }
       };
       process.send(message);
       listener();
