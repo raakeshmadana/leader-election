@@ -1,5 +1,7 @@
 'use strict';
 const net = require('net');
+const colors = require('colors');
+
 const messageTypes = require('./messageTypes');
 
 const uid = process.argv[2];
@@ -13,6 +15,8 @@ var response = {};
 var convergeCast = false;
 var ackSent = false;
 var childrenWorkers = [];
+var terminate = false;
+var count = 1;
 
 const incomingConnections = [];
 const outgoingConnections = [];
@@ -67,12 +71,16 @@ function floodmax() {
           message.bfs = messageTypes.ACK;
           convergeCast = false;
           ackSent = true;
+      } else if (terminate &&
+        childrenWorkers.includes(outgoingConnection.remotePort)) {
+          message.bfs = messageTypes.TERMINATE;
       } else {
         message.bfs = null;
       }
       outgoingConnection.write(JSON.stringify(message));
     });
   }
+  terminate = false;
   rejectedWorkers = [];
 }
 
@@ -143,7 +151,7 @@ function processMessages(messages) {
   });
 
   if (nacks.length) {
-    console.log(uid + ' nacks: ' + nacks);
+    //console.log(uid + ' nacks: ' + nacks);
   }
 
   // Process ACKs
@@ -156,7 +164,7 @@ function processMessages(messages) {
   });
 
   if (acks.length) {
-    console.log(uid + ' acks: ' + acks);
+    //console.log(uid + ' acks: ' + acks);
   }
 
   //Keep track of the responses received
@@ -172,9 +180,25 @@ function processMessages(messages) {
     childrenWorkers.push(ack);
   });
   // If all neighbors responded, start the convergecast
-  if(Object.values(response).every((received) => received) && !ackSent) {
-    convergeCast = true;
+  if(Object.values(response).every((received) => received) && !ackSent &&
+    !terminate && count) {
+    if (source) {
+      terminate = true;
+    } else {
+      convergeCast = true;
+    }
+    count--;
     console.log(uid + ' children:' + childrenWorkers);
+  }
+
+  // Receive terminate message
+  let termination = msgObjs.filter((msgObj) => {
+    return msgObj.bfs === messageTypes.TERMINATE;
+  });
+
+  if (termination.length) {
+    console.log(colors.red(uid + ' received terminate message'));
+    terminate = true;
   }
 
   let payload = {
