@@ -7,6 +7,10 @@ var terminated = false;
 var workers = {};
 var neighbors = {};
 var ports = {};
+var uidFromPorts = {};
+var numWorkersTerminated = 0;
+var leader = null;
+var spanningTree = {};
 
 function connectToNeighbors(worker, uid, {pid}) {
   let neighborsPorts = [];
@@ -40,7 +44,21 @@ function spawnProcesses(input) {
 
 function startRound(worker, uid, parameters) {
   if (parameters.terminated) {
-    console.log(colors.green(uid, parameters.leader, parameters.parent, parameters.children));
+    numWorkersTerminated++;
+    leader = parameters.leader;
+    let row = parameters.children.map((port) => {
+      return uidFromPorts[port];
+    });
+    spanningTree[uid] = row;
+    if (parameters.parent) {
+      spanningTree[uid].push(uidFromPorts[parameters.parent]);
+    }
+    if (numWorkersTerminated === Object.keys(neighbors).length) {
+      // Construct Adjacency matrix
+      console.log(leader, spanningTree);
+    }
+    console.log(colors.green(uid, parameters.leader, parameters.parent,
+      parameters.children));
   }
   let message = {
     type: messageTypes.START_ROUND
@@ -55,5 +73,6 @@ module.exports = {
   printConnectionStatus,
   workers,
   ports,
+  uidFromPorts,
   terminated
 };

@@ -17,6 +17,7 @@ function listener() {
         let parameters = message.payload;
         if (message.type === messageTypes.PID) {
           masterTask.ports[uid] = parameters.pid;
+          masterTask.uidFromPorts[parameters.pid] = uid;
         }
         return resolve({task, uid, parameters});
       });
