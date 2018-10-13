@@ -9,6 +9,10 @@ var marked = source;
 var maxUid = uid;
 var parentWorker = null;
 var rejectedWorkers = [];
+var response = {};
+var convergeCast = false;
+var ackSent = false;
+var childrenWorkers = [];
 
 const incomingConnections = [];
 const outgoingConnections = [];
@@ -58,6 +62,11 @@ function floodmax() {
     outgoingConnections.forEach((outgoingConnection) => {
       if (rejectedWorkers.includes(outgoingConnection.remotePort)) {
         message.bfs = messageTypes.NACK;
+      } else if (convergeCast &&
+        (outgoingConnection.remotePort === parentWorker)) {
+          message.bfs = messageTypes.ACK;
+          convergeCast = false;
+          ackSent = true;
       } else {
         message.bfs = null;
       }
@@ -70,6 +79,7 @@ function floodmax() {
 function initiateConnections({neighbors}) {
   setUpConnectionListener(neighbors.length);
   neighbors.forEach((neighbor) => {
+    response[neighbor] = false;
     let socket = net.createConnection(neighbor, () => {
       //console.log(uid + ' connected to ' + neighbor);
     });
@@ -97,6 +107,7 @@ function processMessages(messages) {
   maxUid = Math.max(...uids, maxUid);
   //console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
 
+  // Process EXPLORE messages
   let exploreRequests = msgObjs.filter((msgObj) => {
     return msgObj.bfs === messageTypes.EXPLORE;
   });
@@ -122,6 +133,7 @@ function processMessages(messages) {
     //}
   }
 
+  // Process NACKs
   let nacks = msgObjs.filter((msgObj) => {
     return msgObj.bfs === messageTypes.NACK;
   });
@@ -132,6 +144,37 @@ function processMessages(messages) {
 
   if (nacks.length) {
     console.log(uid + ' nacks: ' + nacks);
+  }
+
+  // Process ACKs
+  let acks = msgObjs.filter((msgObj) => {
+    return msgObj.bfs === messageTypes.ACK;
+  });
+
+  acks = acks.map((ack) => {
+    return ack.source;
+  });
+
+  if (acks.length) {
+    console.log(uid + ' acks: ' + acks);
+  }
+
+  //Keep track of the responses received
+  exploreRequests.forEach((exploreRequest) => {
+    response[exploreRequest] = true;
+  });
+  nacks.forEach((nack) => {
+    response[nack] = true;
+  });
+  // Add children
+  acks.forEach((ack) => {
+    response[ack] = true;
+    childrenWorkers.push(ack);
+  });
+  // If all neighbors responded, start the convergecast
+  if(Object.values(response).every((received) => received) && !ackSent) {
+    convergeCast = true;
+    console.log(uid + ' children:' + childrenWorkers);
   }
 
   let payload = {
