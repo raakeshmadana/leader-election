@@ -3,17 +3,17 @@ const cp = require('child_process');
 const colors = require('colors');
 const messageTypes = require('./messageTypes');
 
-var terminated = false;
 var ids = [];
 var workers = {};
 var neighbors = {};
 var ports = {};
 var uidFromPorts = {};
-var numWorkersTerminated = 0;
+var numWorkersConverged = 0;
 var leader = null;
 var spanningTree = {};
+var terminated = false;
 
-function connectToNeighbors(worker, uid, {pid}) {
+function connectToNeighbors(uid, {pid}) {
   let neighborsPorts = [];
   neighbors[uid].forEach((neighbor) => {
     neighborsPorts.push(ports[neighbor]);
@@ -25,7 +25,8 @@ function connectToNeighbors(worker, uid, {pid}) {
     type: messageTypes.INITIATE_CONNECTIONS,
     payload: payload
   };
-  worker.send(message);
+  workers[uid].send(message);
+  return;
 }
 
 function formAdjMatrix() {
@@ -41,13 +42,9 @@ function formAdjMatrix() {
     });
     adjMatrix.push(row);
   });
-  console.log('Adjacency Matrix');
+  console.log('\nAdjacency Matrix');
   console.log(adjMatrix);
-}
-
-function printConnectionStatus(worker, uid, parameters) {
-  console.log(uid + ' connected to all its neighbors');
-  terminated = true;
+  return;
 }
 
 function spawnProcesses(input) {
@@ -61,41 +58,47 @@ function spawnProcesses(input) {
   return;
 }
 
-function startRound(worker, uid, parameters) {
-  if (parameters.terminated) {
-    numWorkersTerminated++;
-    leader = parameters.leader;
-    let row = parameters.children.map((port) => {
+function startRound(uid, {converged, maxUid, parent, children}) {
+  if (converged) {
+    numWorkersConverged++;
+    leader = maxUid;
+    let row = children.map((port) => {
       return uidFromPorts[port];
     });
     spanningTree[uid] = row;
-    if (parameters.parent) {
-      spanningTree[uid].push(uidFromPorts[parameters.parent]);
+    if (parent) {
+      spanningTree[uid].push(uidFromPorts[parent]);
     }
-    //console.log(colors.green(uid, parameters.leader, parameters.parent,
-    //  parameters.children));
   }
-  if (numWorkersTerminated === Object.keys(neighbors).length && !terminated) {
+  if (numWorkersConverged === Object.keys(neighbors).length && !terminated) {
     terminated = true;
-    console.log('Leader: ' + leader);
-    console.log('Adjacency List:');
-    console.log(spanningTree);
-    formAdjMatrix();
+    let message = {
+      type: messageTypes.TERMINATE
+    };
+    for (uid of ids) {
+      workers[uid].send(message);
+    }
+    setTimeout(() => {
+      console.log('\nLeader: ' + leader);
+      console.log('\nAdjacency List:');
+      console.log(spanningTree);
+      formAdjMatrix();
+      process.exit();
+    }, 300);
   } else {
     let message = {
       type: messageTypes.START_ROUND
     };
-    worker.send(message);
+    workers[uid].send(message);
   }
+  return;
 }
 
 module.exports = {
   connectToNeighbors,
   spawnProcesses,
   startRound,
-  printConnectionStatus,
   workers,
   ports,
-  uidFromPorts,
-  terminated
+  uidFromPorts
 };

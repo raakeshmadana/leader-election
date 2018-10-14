@@ -24,12 +24,12 @@ const outgoingConnections = [];
 const tasks = {};
 tasks[messageTypes.INITIATE_CONNECTIONS] = initiateConnections;
 tasks[messageTypes.START_ROUND] = startRound;
+tasks[messageTypes.TERMINATE] = stopFloodMax;
 
 
 const server = net.createServer();
 
 server.listen(process.pid, () => {
-  //console.log(uid + ' listening at ' +  process.pid);
   let payload = {pid: process.pid};
   let message = {
     source: uid,
@@ -82,6 +82,7 @@ function floodmax() {
   }
   terminate = false;
   rejectedWorkers = [];
+  return;
 }
 
 function initiateConnections({neighbors}) {
@@ -89,10 +90,11 @@ function initiateConnections({neighbors}) {
   neighbors.forEach((neighbor) => {
     response[neighbor] = false;
     let socket = net.createConnection(neighbor, () => {
-      //console.log(uid + ' connected to ' + neighbor);
+      console.log(uid + ' connected to ' + neighbor);
     });
     outgoingConnections.push(socket);
   });
+  return;
 }
 
 function listener() {
@@ -125,7 +127,6 @@ function processMessages(messages) {
   });
 
   if (exploreRequests.length) {
-    //console.log(uid, exploreRequests);
     // Select parent worker
     if (!parentWorker && !source) {
       let randomIndex = Math.floor(Math.random() * exploreRequests.length);
@@ -136,9 +137,6 @@ function processMessages(messages) {
     rejectedWorkers = exploreRequests.filter((exploreRequest) => {
       return exploreRequest !== parentWorker;
     });
-    //if(rejectedWorkers.length) {
-      //console.log(uid, parentWorker, rejectedWorkers);
-    //}
   }
 
   // Process NACKs
@@ -150,10 +148,6 @@ function processMessages(messages) {
     return nack.source;
   });
 
-  if (nacks.length) {
-    //console.log(uid + ' nacks: ' + nacks);
-  }
-
   // Process ACKs
   let acks = msgObjs.filter((msgObj) => {
     return msgObj.bfs === messageTypes.ACK;
@@ -162,10 +156,6 @@ function processMessages(messages) {
   acks = acks.map((ack) => {
     return ack.source;
   });
-
-  if (acks.length) {
-    //console.log(uid + ' acks: ' + acks);
-  }
 
   //Keep track of the responses received
   exploreRequests.forEach((exploreRequest) => {
@@ -180,7 +170,7 @@ function processMessages(messages) {
     childrenWorkers.push(ack);
   });
   // If all neighbors responded, start the convergecast
-  if(Object.values(response).every((received) => received) && !ackSent &&
+  if (Object.values(response).every((received) => received) && !ackSent &&
     !terminate && count) {
     if (source) {
       terminate = true;
@@ -188,7 +178,6 @@ function processMessages(messages) {
       convergeCast = true;
     }
     count--;
-    //console.log(uid + ' children:' + childrenWorkers);
   }
 
   // Receive terminate message
@@ -197,18 +186,17 @@ function processMessages(messages) {
   });
 
   if (termination.length) {
-    //console.log(colors.red(uid + ' received terminate message'));
     terminate = true;
   }
 
   let payload = {
-    terminated: false,
-    leader: maxUid,
+    converged: false,
+    maxUid: maxUid,
     parent: parentWorker,
     children: childrenWorkers
   };
   if (terminate) {
-    payload.terminated = true;
+    payload.converged = true;
   }
   let message = {
     type: messageTypes.END_ROUND,
@@ -217,10 +205,12 @@ function processMessages(messages) {
   };
   process.send(message);
   listener();
+  return;
 }
 
 function startRound(parameters) {
   floodmax();
+  return;
 }
 
 function setUpConnectionListener(numNeighbors) {
@@ -231,11 +221,17 @@ function setUpConnectionListener(numNeighbors) {
         type: messageTypes.CONNECTIONS_ESTABLISHED,
         source: uid,
         payload: {
-          terminated: false
+          converged: false
         }
       };
       process.send(message);
       listener();
     }
   });
+  return;
+}
+
+function stopFloodMax() {
+  console.log(colors.green(uid + ' stopped floodmax'));
+  process.exit();
 }

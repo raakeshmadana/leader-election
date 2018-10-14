@@ -27,15 +27,13 @@ function listener() {
 }
 
 function listenerHandle(operations) {
-  if (!masterTask.terminated) {
-    listener();
-    operations.forEach((operation) => {
-      operation.task(
-        masterTask.workers[operation.uid],
-        operation.uid,
-        operation.parameters);
-    });
-  }
+  listener();
+  operations.forEach((operation) => {
+    operation.task(
+      operation.uid,
+      operation.parameters);
+  });
+  return;
 }
 
 module.exports = {
