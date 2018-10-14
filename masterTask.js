@@ -41,6 +41,7 @@ function formAdjMatrix() {
     });
     adjMatrix.push(row);
   });
+  console.log('Adjacency Matrix');
   console.log(adjMatrix);
 }
 
@@ -71,18 +72,21 @@ function startRound(worker, uid, parameters) {
     if (parameters.parent) {
       spanningTree[uid].push(uidFromPorts[parameters.parent]);
     }
-    if (numWorkersTerminated === Object.keys(neighbors).length) {
-      // Construct Adjacency matrix
-      formAdjMatrix();
-      console.log(leader, spanningTree);
-    }
-    console.log(colors.green(uid, parameters.leader, parameters.parent,
-      parameters.children));
+    //console.log(colors.green(uid, parameters.leader, parameters.parent,
+    //  parameters.children));
   }
-  let message = {
-    type: messageTypes.START_ROUND
-  };
-  worker.send(message);
+  if (numWorkersTerminated === Object.keys(neighbors).length && !terminated) {
+    terminated = true;
+    console.log('Leader: ' + leader);
+    console.log('Adjacency List:');
+    console.log(spanningTree);
+    formAdjMatrix();
+  } else {
+    let message = {
+      type: messageTypes.START_ROUND
+    };
+    worker.send(message);
+  }
 }
 
 module.exports = {

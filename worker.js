@@ -29,7 +29,7 @@ tasks[messageTypes.START_ROUND] = startRound;
 const server = net.createServer();
 
 server.listen(process.pid, () => {
-  console.log(uid + ' listening at ' +  process.pid);
+  //console.log(uid + ' listening at ' +  process.pid);
   let payload = {pid: process.pid};
   let message = {
     source: uid,
@@ -113,7 +113,7 @@ function processMessages(messages) {
   // Find Max UID
   let uids = msgObjs.map((msgObj) => msgObj.maxUid);
   maxUid = Math.max(...uids, maxUid);
-  //console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
+  console.log(uid + ' has seen ' + uids + '; max is ' + maxUid);
 
   // Process EXPLORE messages
   let exploreRequests = msgObjs.filter((msgObj) => {
@@ -137,7 +137,7 @@ function processMessages(messages) {
       return exploreRequest !== parentWorker;
     });
     //if(rejectedWorkers.length) {
-      console.log(uid, parentWorker, rejectedWorkers);
+      //console.log(uid, parentWorker, rejectedWorkers);
     //}
   }
 
@@ -188,7 +188,7 @@ function processMessages(messages) {
       convergeCast = true;
     }
     count--;
-    console.log(uid + ' children:' + childrenWorkers);
+    //console.log(uid + ' children:' + childrenWorkers);
   }
 
   // Receive terminate message
@@ -197,7 +197,7 @@ function processMessages(messages) {
   });
 
   if (termination.length) {
-    console.log(colors.red(uid + ' received terminate message'));
+    //console.log(colors.red(uid + ' received terminate message'));
     terminate = true;
   }
 
