@@ -25,9 +25,6 @@ decision to terminate the floodmax algorithm.
 Read more about convergecast
 [here](http://www.cs.yale.edu/homes/aspnes/pinewiki/ConvergeCast.html)
 
-___
-
-## Implementation
 ### Input to the master
 - Number of processes
 - A Unique ID (UID) for each process
