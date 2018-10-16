@@ -8,9 +8,7 @@ initiateFloodMax();
 function initiateFloodMax() {
   const inputFile = process.argv[2];
 
-  helpers.parseInput(inputFile).then(
-    (input) => {
-      console.log(input);
+  helpers.parseInput(inputFile).then((input) => {
       return masterTask.spawnProcesses(input);
     },
     (err) => {

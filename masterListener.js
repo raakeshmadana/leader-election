@@ -17,6 +17,7 @@ function listener() {
         let parameters = message.payload;
         if (message.type === messageTypes.PID) {
           masterTask.ports[uid] = parameters.pid;
+          masterTask.uidFromPorts[parameters.pid] = uid;
         }
         return resolve({task, uid, parameters});
       });
@@ -26,15 +27,13 @@ function listener() {
 }
 
 function listenerHandle(operations) {
-  if (!masterTask.terminated) {
-    listener();
-  }
+  listener();
   operations.forEach((operation) => {
     operation.task(
-      masterTask.workers[operation.uid],
       operation.uid,
       operation.parameters);
   });
+  return;
 }
 
 module.exports = {
